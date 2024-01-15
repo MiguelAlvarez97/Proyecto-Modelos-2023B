@@ -143,7 +143,7 @@ public:
     double x, y, z;  // Coordenadas del punto.
 
     // Constructor predeterminado que inicializa el punto en el origen.
-    point() : x(1), y(1), z(1) {}
+    point() : x(0), y(0), z(0) {}
 
     // Traslación por un vector.
     point operator+(Vectores v)
@@ -619,7 +619,7 @@ public:
                 {
                     plane plane = p[planeIdx];
 
-                    // Comprobar si el rayo se encuentra en el lado correcto del plano
+                    // Producto escalar de la normal del plano y la direccion del rayo, si es < 0 rebota
                     if (plane.n.x * ray.x + plane.n.y * ray.y + plane.n.z * ray.z < 0)
                     {
                         double distancia = Intersectiondistancia(plane.n, plane.p[0], ray, currentPoint);

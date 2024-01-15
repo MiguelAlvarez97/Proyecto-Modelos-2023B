@@ -16,7 +16,7 @@ double N_RAYOS = 12; //Almacena el numero de rayos
 int energiaFuente = 100; //Energia de la fuente
 source s;           // Instancia de la fuente.
 float alfa = 0.2; //Defincion del coeficiente alfa
-float delta = 0.2; //Defincion del coeficiente alfa
+float delta = 0.2; //Defincion del coeficiente delta
 reflexion* reflexiones = NULL; //Reflecciones de cada rayo
 point o; //Punto de origen de la Fuente
 
@@ -34,19 +34,19 @@ int main()
     double val_X, val_Y, val_Z;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion x: ";
+    std::cout << "Ingrese la posicion de la Fuente en x: ";
 
     // Lectura del primer valor desde la consola
     std::cin >> val_X;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion y: ";
+    std::cout << "Ingrese la posicion de la Fuente en y: ";
 
     // Lectura del segundo valor desde la consola
     std::cin >> val_Y;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion z: ";
+    std::cout << "Ingrese la posicion de la Fuente en z: ";
 
     // Lectura del tercer valor desde la consola
     std::cin >> val_Z;
