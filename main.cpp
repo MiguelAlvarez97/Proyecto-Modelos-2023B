@@ -202,6 +202,7 @@ void crearSala()
             }
         }
         NumTri = cont_t;  // Asigna el número total de triángulos.
+        std::cout << "Numero de Triangulos  " << NumTri<<std::endl;
 
      //Inicializacion de las matrices
         mD.Init(NumTri, NumTri);

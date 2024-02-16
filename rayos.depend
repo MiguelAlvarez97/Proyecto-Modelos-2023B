@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1708063799 source:c:\users\migue\documents\epn_computacion\modelos y simulación  (iccd814) gr1cc_2023\proyectoclaserayos\rayos\main.cpp
+1708064878 source:c:\users\migue\documents\epn_computacion\modelos y simulación  (iccd814) gr1cc_2023\proyectoclaserayos\rayos\main.cpp
 	<iostream>
 	"rayos.h"
 	<fstream>
