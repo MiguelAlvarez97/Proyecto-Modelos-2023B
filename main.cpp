@@ -3,30 +3,31 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+
 using namespace std;
 
 //=======================================
-//VariablesGlobales
-bool salaIniciada; //si la habitación ha sido cargada .
-room r;          // Instancia para representar la habitación.
-int tM = 1000; //tiempo de simulacion en unidad discreta
-MatrizResultados mTE; //matriz que guarda el ID del triángulo en el que rebota el rayo
-MatrizResultados mE; //matriz de energia residual.
-int NumTri = 0; //Almacena el número total de triángulos.
-double N_RAYOS = 12; //Almacena el numero de rayos
-int energiaFuente = 120; //Energia de la fuente
-source s;           // Instancia de la fuente.
-float alfa = 0.2; //Defincion del coeficiente alfa
-float delta = 0.2; //Defincion del coeficiente delta
+//Variables Globales
+bool salaIniciada;      //si la habitación ha sido cargada .
+room r;                 // Instancia para representar la habitación.
+int tM = 1000;          //tiempo de simulacion en milisegundos
+MatrizResultados mTE;   //matriz que guarda el ID del triángulo en el que rebota el rayo
+MatrizResultados mE;    //matriz de energia residual.
+int NumTri = 0;         //Almacena el número total de triángulos.
+double N_RAYOS = 12;    //Almacena el numero de rayos
+int energiaFuente = 120;//Energia de la fuente
+source s;               // Instancia de la fuente.
+float alfa = 0.2;       //Defincion del coeficiente alfa
+float delta = 0.2;      //Defincion del coeficiente delta
 reflexion* reflexiones = NULL; //Reflecciones de cada rayo
-point o; //Punto de origen de la Fuente
-int cortes = 1; //Número de cortes por cada plano
-point** arrayRec;  //Array Recorrido
-MatrizResultados mD; //Matriz que almacene la distancia que existe entre los centros de los diferentes triángulos de la sala.
-//Está matriz tiene una dimensión de 𝑛 × 𝑛 donde 𝑛 es el número de triángulos (NumTri) de la sala.
-MatrizResultados mTV;//matriz que almacena los tiempos de vuelo entre baricentros en milisegundos que demorarían las reflexiones difusas
-//para llegar de un centroide a otro(entre todos los triángulos que apliquen, es decir que sean visibles)
-// La matriz tendrá una dimensión de 𝑛 × n
+point o;                //Punto de origen de la Fuente
+int cortes = 4;         //Número de cortes por cada plano
+point** arrayRec;       //Array Recorrido
+MatrizResultados mD;    //Matriz que almacene la distancia que existe entre los centros de los diferentes triángulos de la sala.
+                        //Está matriz tiene una dimensión de 𝑛 × 𝑛 donde 𝑛 es el número de triángulos (NumTri) de la sala.
+MatrizResultados mTV;   //matriz que almacena los tiempos de vuelo entre baricentros en milisegundos que demorarían las reflexiones difusas
+                        //para llegar de un centroide a otro(entre todos los triángulos que apliquen, es decir que sean visibles)
+                        // La matriz tendrá una dimensión de 𝑛 × n
 MatrizResultados mAS; //matriz angulos solidos
 MatrizResultados mPE; //matriz porcentage de energia. La matriz tendrá una dimensión de 𝑛 × n
 MatrizResultados mET; //matriz porcentage de energia. (espacio/tiempo)
@@ -34,13 +35,13 @@ MatrizResultados mDR; //Matriz Distancia Receptor
 MatrizResultados mTVR; //Matriz Tiempo de Vuelo  Receptor
 MatrizResultados mASR; //matriz angulos solidos Receptor
 MatrizResultados mPER; //matriz porcentage de energia Receptor
-MatrizResultados mER;
+MatrizResultados mER; //matriz de energía residual
 
 const int NumReceptores = 27; // Número de receptores
 
 void crearSala();
 void calcularEnergia(double x, double y, double z);
-void guardarMatrizCSV(MatrizResultados matriz, const std::string& nombreArchivo);
+void guardarMatrizCSV(MatrizResultados matriz, const string& nombreArchivo);
 
 int main()
 {
@@ -51,26 +52,25 @@ int main()
     double val_X, val_Y, val_Z;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion de la Fuente en x: ";
+    cout << " \nIngrese la posición de la Fuente: " << endl;
+    cout << "Ingrese la posiciones de la Fuente en x: ";
 
     // Lectura del primer valor desde la consola
-    std::cin >> val_X;
+    cin >> val_X;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion de la Fuente en y: ";
+    cout << "Ingrese la posicion de la Fuente en y: ";
 
     // Lectura del segundo valor desde la consola
-    std::cin >> val_Y;
+    cin >> val_Y;
 
     // Mensaje para el usuario
-    std::cout << "Ingrese la posicion de la Fuente en z: ";
+    cout << "Ingrese la posicion de la Fuente en z: ";
 
     // Lectura del tercer valor desde la consola
-    std::cin >> val_Z;
-
+    cin >> val_Z;
 
     calcularEnergia(val_X, val_Y, val_Z);
-
 
     return 0;
 }
@@ -202,9 +202,9 @@ void crearSala()
             }
         }
         NumTri = cont_t;  // Asigna el número total de triángulos.
-        std::cout << "Numero de Triangulos  " << NumTri<<std::endl;
+        cout << "Numero de Triangulos  " << NumTri<< endl;
 
-     //Inicializacion de las matrices
+        //Inicializacion de las matrices
         mD.Init(NumTri, NumTri);
         mTV.Init(NumTri, NumTri);;
         mAS.Init(NumTri, NumTri);
@@ -243,33 +243,31 @@ void crearSala()
             }
         }
 
-        std::cout << "Matriz distancia entre Baricentros de los triangulos" << std::endl;
+        cout << "Matriz distancia entre Baricentros de los triangulos" << endl;
         for (int i = 0; i < NumTri; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << std::fixed << std::setprecision(2) << mD.A[i][j] << " ";
+                cout << fixed << setprecision(2) << mD.A[i][j] << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
 
-        std::cout << "Matriz tiempo de vuelo entre Baricentros de los triangulos" << std::endl;
+        cout << "Matriz tiempo de vuelo entre Baricentros de los triangulos" << endl;
         for (int i = 0; i < NumTri; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << mTV.A[i][j] << " "; // Use setw for formatting integers
+                cout << mTV.A[i][j] << " "; // Use setw for formatting integers
             }
-            std::cout << std::endl;
+            cout << endl;
         }
 
-        std::cout << "Matriz porcentaje de energia de los triangulos" << std::endl;
+        cout << "Matriz porcentaje de energia de los triangulos" << endl;
         for (int i = 0; i < NumTri; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << std::fixed << std::setprecision(3) << mPE.A[i][j] << " ";
+                cout << fixed << setprecision(3) << mPE.A[i][j] << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
         //libera la memoria
         delete[] suma_angulos_solidos;
-
-
 
 
         double* suma_angulos_solidos_receptor = new double[r.NR]();
@@ -295,28 +293,28 @@ void crearSala()
             }
         }
 
-        std::cout << "\n\nMatriz distancia entre Baricentros de los receptores\n\n" << std::endl;
+        cout << "\n\nMatriz distancia entre Baricentros de los receptores\n\n" << endl;
         for (int i = 0; i < r.NR; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << std::fixed << std::setprecision(2) << mDR.A[i][j] << " ";
+                cout << fixed << setprecision(2) << mDR.A[i][j] << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
 
-        std::cout << "\n\nMatriz tiempo de vuelo entre Baricentros de los receptores\n\n" << std::endl;
+        cout << "\n\nMatriz tiempo de vuelo entre Baricentros de los receptores\n\n" << endl;
         for (int i = 0; i < r.NR; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << mTVR.A[i][j] << " "; // Use setw for formatting integers
+                cout << mTVR.A[i][j] << " "; // Use setw for formatting integers
             }
-            std::cout << std::endl;
+            cout << endl;
         }
 
-        std::cout << "\n\nMatriz porcentaje de energia de los receptores\n\n" << std::endl;
+        cout << "\n\nMatriz porcentaje de energia de los receptores\n\n" << endl;
         for (int i = 0; i < r.NR; i++) {
             for (int j = 0; j < NumTri; j++) {
-                std::cout << std::fixed << std::setprecision(3) << mPER.A[i][j] << " ";
+                cout << fixed << setprecision(3) << mPER.A[i][j] << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
         salaIniciada = true; // Indica que la habitación ha sido cargada exitosamente.
     }
@@ -324,17 +322,13 @@ void crearSala()
 
 void calcularEnergia(double x, double y, double z)
 {
-
-
     if (salaIniciada)
     {
-
         int t_vuelo = 0; // Tiempo de vuelo del rayo
         // Coordenadas de la fuente
         o.x = x;
         o.y = y;
         o.z = z;
-
 
         s.eF = energiaFuente; //Energia de la fuente
 
@@ -346,40 +340,24 @@ void calcularEnergia(double x, double y, double z)
 
         reflexiones = r.RayTracing(o, s.Rays, s.NRAYS);
 
-        //mE.Init(N_RAYOS, NUM_REBOTES); //inicializacion de la matriz de energia
         mTE.Init(N_RAYOS, NUM_REBOTES); //inicializacion de la matriz de ID de triangulos en el que rebota el rayo
+
         mE.Init(NumTri, tM); //inicializacion de la matriz de energia
 
         mER.Init(r.NR, tM); //inicializacion de la matriz de energia del receptor
-
-        arrayRec = new point * [s.NRAYS];
-
-
 
         // Difusión de la energía difusa en los triángulos
         for (int rayo = 0; rayo < s.NRAYS; rayo++) {
             double eneResidual = eneRayo;
             double distAcum = 0;
-            arrayRec[rayo] = new point[tM];
-            arrayRec[rayo][0] = o;
-            int tiempo = 0;
             for (int re = 0; re < reflexiones[rayo].N; re++) {
                 int tri = reflexiones[rayo].idTriangle[re];
-                point pun = reflexiones[rayo].r[re];
                 distAcum += reflexiones[rayo].d[re];
                 int tim = int(1000 * distAcum / V_SON);
-                arrayRec[rayo][tim] = pun;
-                for (int t = tiempo + 1; t < tim; t++) {
-                    arrayRec[rayo][t].x = arrayRec[rayo][t - 1].x + (arrayRec[rayo][tim].x - arrayRec[rayo][tiempo].x) / (tim - tiempo);
-                    arrayRec[rayo][t].y = arrayRec[rayo][t - 1].y + (arrayRec[rayo][tim].y - arrayRec[rayo][tiempo].y) / (tim - tiempo);
-                    arrayRec[rayo][t].z = arrayRec[rayo][t - 1].z + (arrayRec[rayo][tim].z - arrayRec[rayo][tiempo].z) / (tim - tiempo);
-                    //std::cout << "rayo " << rayo<<" t " << t<< "\n"<<std::endl;
-                }
-                for (int j = 0; j < r.NR; j++) {
-                    mER.A[tri][tim] = eneResidual; //Energia  del rayo al receptor
-
-                }
-                tiempo = tim;
+                // Error
+                //for (int j = 0; j < r.NR; j++) {
+                  //  mER.A[numre][tim] = eneResidual; //Energia  del rayo al receptor
+                //}
                 mE.A[tri][tim] += (eneResidual * (1 - alfa) * delta); //Energia difusa en los triangulos
                 eneResidual = eneResidual * (1 - alfa) * (1 - delta); //Energia incidente de los rayos
                 mTE.A[rayo][re] = tri;
@@ -408,54 +386,24 @@ void calcularEnergia(double x, double y, double z)
                 };
             }
         }
-        /*std::cout << "Matriz de Trancición de energia" << std::endl;
-        for (int i = 0; i < NumTri; i++) {
-            for (int j = 0; j < tM; j++) {
-                std::cout << mE.A[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "Matriz de energia del receptor" << std::endl;
-        for (int i = 0; i < NumTri; i++) {
-            for (int j = 0; j < tM; j++) {
-                std::cout << mER.A[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
 
-        std::cout << "\nMatriz ID de triangulos donde rebota el rayo:" << std::endl;
-        for (int i = 0; i < N_RAYOS; i++)
-        {
-            for (int j = 0; j < NUM_REBOTES; j++)
-            {
-                std::cout << mTE.A[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }*/
 //-------------------------------Guardar en Archivo CSV----------------------------------
         // Nombre del archivo CSV
-        std::string nombreArchivoE = "matrizTransicionEnergiaReceptores.csv";
-
+        string nombreArchivoE = "matrizTransicionEnergiaReceptores.csv";
         // Llamar a la función para guardar la matriz en el archivo CSV
         guardarMatrizCSV(mER, nombreArchivoE);
-
-        std::cout << "\nMatriz guardada en " << nombreArchivoE << std::endl;
-
-
-
-
-
+        cout << "\nMatriz guardada en " << nombreArchivoE << endl;
     }
 }
 
 
-void guardarMatrizCSV(MatrizResultados matriz, const std::string& nombreArchivo)
+void guardarMatrizCSV(MatrizResultados matriz, const string& nombreArchivo)
 {
-    std::ofstream archivo(nombreArchivo);
+    ofstream archivo(nombreArchivo);
 
     if (!archivo.is_open())
     {
-        std::cerr << "Error al abrir el archivo." << std::endl;
+        cerr << "Error al abrir el archivo." << endl;
         return;
     }
 
@@ -467,8 +415,6 @@ void guardarMatrizCSV(MatrizResultados matriz, const std::string& nombreArchivo)
             archivo << matriz.A[i][j] << ";";
         }
         archivo << "\n";  // Nueva línea después de cada fila
-
-
     }
     archivo.close();
 }
