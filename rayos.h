@@ -136,6 +136,7 @@ public:
         return u;
     }
 };
+
 //-----------------------------------------Clase Punto-----------------------
 class point
 {
@@ -238,6 +239,36 @@ public:
     }
 };
 
+class matPuntos {
+public:
+    point** p;      //Matriz din�mica de puntos
+    int I, J;         //N�mero de puntos
+
+    matPuntos() {
+        I = 0;
+        J = 0;
+        p = NULL;
+    };
+
+    ~matPuntos() {
+        I = 0;
+        J = 0;
+        delete[] p;
+        p = NULL;
+    };
+
+    void init(int x, int y) {
+        I = x;
+        J = y;
+        p = new point * [I];
+        for (int i = 0; i < I; i++) {
+            p[i] = new point[J];
+            for (int j = 0; j < J; j++)
+                p[i][j] = 0.0;
+        }
+    };
+};
+
 
 //-------------------------------Clase Triangulo--------------------------------------------
 class triangle
@@ -322,6 +353,22 @@ public:
             a0 = 1 / (-p1.x * p0.y + p2.x * p0.y + p0.x * p1.y - p2.x * p1.y - p0.x * p2.y + p1.x * p2.y + 0.000001);
         }
     }
+        double AnguloSolido(point b) {
+        double area = 0.0, d = 0.2;
+        triangle t;
+        Vectores v0, v1, v2;
+        v0 = p0 - b;
+        v1 = p1 - b;
+        v2 = p2 - b;
+        v0 = v0 / v0.Module();
+        v1 = v1 / v1.Module();
+        v2 = v2 / v2.Module();
+        t.p0 = b + (v0 * d);
+        t.p1 = b + (v1 * d);
+        t.p2 = b + (v2 * d);
+        area = t.TriangleArea();
+        return area;
+    };
 
 
 };
@@ -406,7 +453,58 @@ public:
         NT += N;
     }
 
-    // Función para generar dos triángulos a partir de los vértices de un cuadrado en el plano
+        void MoreTriangle(int nd) { //Genera m�s tri�ngulos a partir de una malla con nd divisiones
+        if (NP == 4) {
+            int i, j, cont;   //Contadores
+            matPuntos mp;   //Matriz din�mica de puntos
+            Vectores v1, v2;  //Vectores directores en cada lado del cuadrado
+            double m1, m2;  //m�dulos de los Vectores directores
+            double p1, p2;  //tama�o del paso
+            v1 = p[1] - p[0];   //Vector director 1 dgenerado por el v�rtice 1 y 2
+            v2 = p[2] - p[1];   //Vector director 2 generado por el v�rtice 2 y 3
+            m1 = v1.Module(); //m�dulo del Vector director 1
+            m2 = v2.Module(); //m�dulo del Vector director 2
+            v1 = v1 / m1;       //Vector director 1 unitario
+            v2 = v2 / m2;       //Vector director 2 unitario
+            p1 = m1 / nd;       //paso 1
+            p2 = m2 / nd;       //paso 2
+
+            mp.init(nd + 1, nd + 1);//Lleno la matriz de puntos, seg�n los v�rtices del cuadrado inicial.
+            for (i = 0; i <= nd; i++) {
+                mp.p[i][0] = p[0] + (v1 * (p1 * i));
+                for (j = 1; j <= nd; j++)
+                    mp.p[i][j] = mp.p[i][0] + (v2 * (p2 * j));
+            }
+
+            plane* a_p = new plane[nd * nd];
+            cont = 0;
+            for (i = 0; i < nd; i++) {
+                for (j = 0; j < nd; j++) {
+                    a_p[cont].Clear();
+                    a_p[cont].NewPoints(4);
+                    a_p[cont].p[0] = mp.p[i][j];
+                    a_p[cont].p[1] = mp.p[i + 1][j];
+                    a_p[cont].p[2] = mp.p[i + 1][j + 1];
+                    a_p[cont].p[3] = mp.p[i][j + 1];
+                    a_p[cont].PointGenTriangle();
+                    cont++;
+                }
+            }
+
+            cont = 0;
+            NewTriangle(2 * nd * nd);
+            for (int i = 0; i < nd * nd; i++) {
+                for (int j = 0; j < a_p[i].NT; j++) {
+                    t[cont] = a_p[i].t[j];
+                    cont++;
+                }
+            }
+            delete a_p;
+            a_p = NULL;
+        }
+    };
+
+// Función para generar dos triángulos a partir de los vértices de un cuadrado en el plano
     void PointGenTriangle()
     {
         NewTriangle(NP - 2);
@@ -473,6 +571,40 @@ struct reflexion
     int N;            // Número de reflexiones
 };
 
+//----------------------------Clase Receptor ---------------------------
+class receptor {
+public:
+    point p;                //Posición
+    double ReceptionRadius; //Radio de recepci�n
+
+
+    receptor() {
+        p = 0.0;
+        ReceptionRadius = 0.5;
+
+    }
+    double CalcularAreaDiscoProyectado(point b) {
+        // Inicializar variables
+        double area = 0.0;     // Área del disco proyectado.
+        double distancia = 0.0; // Distancia entre el punto p y b.
+        double altura = 0.0;   // Altura del triángulo.
+        double radio = 0.0;    // Radio del disco proyectado.
+        double angulo = 0.0;   // Ángulo entre distancia y altura.
+        double distanciaProyeccion = 0.2; // Distancia a la que se proyecta el disco desde el centroide.
+
+        Vectores vectorAuxiliar = p - b;// Calcular el vector entre punto hasta el centroide
+
+        distancia = sqrt(vectorAuxiliar * vectorAuxiliar); // Calcular la distancia distancia entre p y b
+        altura = sqrt(distancia * distancia + ReceptionRadius);        // Calcular la altura altura del triángulo utilizando el teorema de Pitágoras y un factor de escala (0.3 en este caso).
+        angulo = acos(distancia / altura);         // Calcular el ángulo angulo entre distancia y altura utilizando la función inversa del coseno (acos).
+        altura = distanciaProyeccion / cos(angulo);         // Ajustar la altura altura en función de la distancia a la que se proyecta el disco .
+        radio = sqrt(altura * altura - distanciaProyeccion * distanciaProyeccion);  // Calcular el radio radio del disco proyectado utilizando el teorema de Pitágoras.
+        area = PI * radio * radio;         // Calcular el área del disco proyectado como el área de un círculo con radio radio (π * radio^2).
+
+        return area;
+    };
+
+};
 
 //-----------------------------------Clase Room----------------------------------------
 class room
@@ -481,6 +613,8 @@ public:
     int		NP;		// Número de Planos
     plane* p;		// Puntero a Planos
     double		distMax;		// Distancia máxima entre dos puntos en la sala.
+    receptor* r;     //Number of receptors
+    int NR;     //Number of receptors
 
     room()
     {
@@ -573,6 +707,23 @@ public:
             return false;
 
     };
+    void NewReceptor(int N) {
+        NR = N;
+        delete[] r;
+        r = new receptor[NR];
+
+        int cont_rec = 0;
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                for (int k = -1; k < 2; k++) {
+                    r[cont_rec].p.x = i;
+                    r[cont_rec].p.y = j;
+                    r[cont_rec].p.z = k;
+                    cont_rec++;
+                }
+            }
+        }
+    }
 
     // Función para calcular la reflexión de un vector incidente respecto a una normal
     Vectores Reflect(Vectores incident, Vectores normal)
